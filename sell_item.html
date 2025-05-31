@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sell Item - ThriftShop</title>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script>
+        // Initialize Supabase client
+        const supabaseUrl = 'https://egnxlyydywpmllfnafnk.supabase.co'
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVnbnhseXlkeXdwbWxsZm5hZm5rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc5MTMzMDIsImV4cCI6MjA2MzQ4OTMwMn0.-ukPGzSlSPCk792kRqxZghELfctMjQe5i40r-mdpt1w';
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+        // Check authentication status on page load
+        async function checkAuth() {
+            const { data: { session }, error } = await supabase.auth.getSession();
+            if (error) {
+                console.error('Auth check error:', error.message);
+                alert('Error checking authentication status. Please try logging in again.');
+                window.location.href = 'index.html';
+                return false;
+            }
+            if (!session) {
+                alert('Please log in to post items for sale');
+                window.location.href = 'index.html';
+                return false;
+            }
+            return true;
+        }
+
+        // Call checkAuth when page loads
+        window.addEventListener('DOMContentLoaded', checkAuth);
+    </script>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f2f2f2;
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #555;
+            padding: 15px 30px;
+        }
+
+        .navbar-left {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo {
+            background: white;
+            padding: 0.5rem 1rem;
+            margin-right: 25px;
+        }
+
+        .logo img {
+            height: 40px;
+            width: 40px;
+            object-fit: contain;
+        }
+
+        .navbar-left a {
+            color: rgb(216, 203, 203);
+            text-decoration: none;
+            margin-right: 25px;
+            font-size: 16px;
+            transition: color 0.3s;
+        }
+
+        .navbar-left a:hover {
+            color: white;
+        }
+
+        .nav-icon {
+            color: white;
+            font-size: 20px;
+            margin-left: 20px;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .nav-icon:hover {
+            color: #ddd;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+        }
+
+        .page-title {
+            text-align: center;
+            margin-bottom: 2rem;
+            color: #333;
+        }
+
+        .sell-form {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #333;
+            font-weight: bold;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            border-color: #555;
+            outline: none;
+        }
+
+        .form-group textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .image-preview {
+            width: 200px;
+            height: 200px;
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            margin-top: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .image-preview img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        .submit-btn {
+            background-color: #4CAF50;
+            color: white;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 6px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            width: 100%;
+            transition: background-color 0.3s;
+        }
+
+        .submit-btn:hover {
+            background-color: #45a049;
+        }
+
+        .error-message {
+            color: #ff4444;
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .success-message {
+            color: #4CAF50;
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-left">
+            <div class="logo">
+                <img src="pic.png" alt="Logo">
+            </div>
+            <a href="shop.html">Shop</a>
+            <a href="subscribe.html">Subscribe</a>
+            <a href="about.html">About</a>
+        </div>
+        <div class="navbar-right">
+            <a href="shopping basket.html" class="nav-icon" title="Cart">
+                <i class="fas fa-shopping-cart"></i>
+            </a>
+            <a href="order_history.html" class="nav-icon" title="Order History">
+                <i class="fas fa-history"></i>
+            </a>
+            <a href="marketplace.html" class="nav-icon" title="Marketplace">
+                <i class="fas fa-store"></i>
+            </a>
+            <a href="index.html" class="nav-icon" title="Logout">
+                <i class="fas fa-sign-out-alt"></i>
+            </a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h1 class="page-title">Sell Your Item</h1>
+        
+        <form class="sell-form" id="sellForm">
+            <div class="form-group">
+                <label for="title">Item Title</label>
+                <input type="text" id="title" name="title" required>
+            </div>
+
+            <div class="form-group">
+                <label for="description">Description</label>
+                <textarea id="description" name="description" required></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="price">Price (₱)</label>
+                <input type="number" id="price" name="price" min="0" step="0.01" required>
+            </div>
+
+            <div class="form-group">
+                <label for="category">Category</label>
+                <select id="category" name="category" required>
+                    <option value="">Select a category</option>
+                    <option value="clothing">Clothing</option>
+                    <option value="shoes">Shoes</option>
+                    <option value="bags">Bags</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="condition">Item Condition</label>
+                <select id="condition" name="condition" required>
+                    <option value="">Select condition</option>
+                    <option value="new">New</option>
+                    <option value="like_new">Like New</option>
+                    <option value="good">Good</option>
+                    <option value="fair">Fair</option>
+                    <option value="poor">Poor</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="image">Item Image</label>
+                <input type="file" id="image" name="image" accept="image/*" required>
+                <div class="image-preview" id="imagePreview">
+                    <span>Image preview will appear here</span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="location">Location</label>
+                <input type="text" id="location" name="location" required>
+            </div>
+
+            <div class="form-group">
+                <label for="contactEmail">Contact Email</label>
+                <input type="email" id="contactEmail" name="contactEmail" required>
+            </div>
+
+            <div class="form-group">
+                <label for="contactPhone">Contact Phone (optional)</label>
+                <input type="tel" id="contactPhone" name="contactPhone">
+            </div>
+
+            <button type="submit" class="submit-btn">Post Item for Sale</button>
+        </form>
+    </div>
+
+    <script>
+        // Initialize image preview
+        const imageInput = document.getElementById('image');
+        const imagePreview = document.getElementById('imagePreview');
+
+        imageInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    imagePreview.innerHTML = `<img src="${e.target.result}" alt="Preview">`;
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Handle form submission
+        document.getElementById('sellForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            try {
+                // Check authentication first
+                const { data: { session }, error: authError } = await supabase.auth.getSession();
+                if (authError || !session) {
+                    alert('Please log in to post items for sale');
+                    window.location.href = 'index.html';
+                    return;
+                }
+
+                // Get form data
+                const formData = new FormData(e.target);
+                const imageFile = formData.get('image');
+
+                // First, try to save the image directly to the database without storage
+                const imageBase64 = await new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onloadend = () => resolve(reader.result);
+                    reader.readAsDataURL(imageFile);
+                });
+
+                // Prepare listing data
+                const listingData = {
+                    seller_id: session.user.id,
+                    title: formData.get('title'),
+                    description: formData.get('description'),
+                    price: parseFloat(formData.get('price')),
+                    category: formData.get('category'),
+                    condition: formData.get('condition'),
+                    image_url: imageBase64,  // Store image directly as base64
+                    location: formData.get('location'),
+                    contact_email: formData.get('contactEmail'),
+                    contact_phone: formData.get('contactPhone') || null,
+                    status: 'available'
+                };
+
+                // Insert listing into database
+                const { data: listing, error: listingError } = await supabase
+                    .from('product_listings')
+                    .insert([listingData])
+                    .select();
+
+                if (listingError) {
+                    throw new Error('Error creating listing: ' + listingError.message);
+                }
+
+                alert('Item posted successfully!');
+                window.location.href = 'marketplace.html';
+
+            } catch (error) {
+                console.error('Error posting item:', error);
+                alert('Error posting item: ' + error.message);
+            }
+        });
+    </script>
+</body>
+</html> 

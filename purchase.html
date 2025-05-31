@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Purchase - ThriftShop</title>
+  <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <script>
+    window.createClient = supabase.createClient;
+  </script>
+  <script src="cart.js"></script>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #f8f8f8;
+    }
+
+    .promo-banner {
+      background-color: #8bd450;
+      color: white;
+      text-align: center;
+      padding: 0.5rem;
+      font-weight: bold;
+    }
+
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: #ddd;
+      padding: 1rem 2rem;
+    }
+
+    .logo {
+      background: white;
+      padding: 0.5rem 1rem;
+      font-weight: bold;
+    }
+
+    .logo img {
+      height: 40px;
+      width: 40px;
+      object-fit: contain;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 2rem;
+    }
+
+    .nav-links a {
+      text-decoration: none;
+      color: #333;
+      font-weight: bold;
+    }
+
+    .search-bar {
+      border: 1px solid #999;
+      padding: 0.5rem;
+      border-radius: 4px;
+      width: 200px;
+    }
+
+    .container {
+      display: flex;
+      gap: 2rem;
+      padding: 2rem;
+    }
+
+    .left,
+    .right {
+      background: white;
+      padding: 2rem;
+      border-radius: 8px;
+      flex: 1;
+    }
+
+    .back-link {
+      display: inline-block;
+      margin-bottom: 1rem;
+      color: #333;
+      text-decoration: none;
+    }
+
+    h2 {
+      margin-top: 0;
+    }
+
+    .item-box {
+      border: 1px solid #ccc;
+      display: flex;
+      padding: 1rem;
+      border-radius: 4px;
+      margin-bottom: 1rem;
+      gap: 1rem;
+      align-items: center;
+    }
+
+    .item-img {
+      width: 80px;
+      height: 80px;
+      object-fit: cover;
+      border-radius: 4px;
+    }
+
+    .item-details {
+      flex: 1;
+    }
+
+    .item-details h3 {
+      margin: 0;
+      margin-bottom: 5px;
+    }
+
+    .price {
+      font-weight: bold;
+      text-align: right;
+    }
+
+    .form-group {
+      margin-bottom: 1rem;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 0.5rem;
+      border: 1px solid #aaa;
+      border-radius: 4px;
+    }
+
+    .radio-group {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 1rem;
+    }
+
+    .radio-group label {
+      margin: 5px 0;
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+    }
+
+    .radio-group input[type="radio"] {
+      margin-right: 10px;
+    }
+
+    .finish-button {
+      width: 100%;
+      padding: 1rem;
+      background-color: #333;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+
+    .section-title {
+      font-weight: bold;
+      margin: 1rem 0 0.5rem;
+    }
+
+    .total-price {
+      font-size: 1.2rem;
+      font-weight: bold;
+      text-align: right;
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid #eee;
+    }
+
+    .empty-cart {
+      text-align: center;
+      padding: 2rem;
+      color: #666;
+    }
+
+    /* Receipt Modal Styles */
+    .receipt-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .receipt-content {
+      background-color: white;
+      padding: 2.5rem;
+      border-radius: 12px;
+      max-width: 400px;
+      width: 90%;
+      max-height: 85vh;
+      overflow-y: auto;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .receipt-header {
+      text-align: center;
+      margin-bottom: 2rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 2px dashed #e0e0e0;
+    }
+
+    .receipt-header h2 {
+      margin: 0;
+      font-size: 1.8rem;
+      color: #333;
+    }
+
+    .receipt-header p {
+      color: #666;
+      margin: 0.5rem 0 0;
+      font-size: 0.9rem;
+    }
+
+    .receipt-store-info {
+      text-align: center;
+      margin-bottom: 1.5rem;
+      font-size: 0.9rem;
+      color: #666;
+    }
+
+    .receipt-items {
+      margin: 1.5rem 0;
+      border-bottom: 2px dashed #e0e0e0;
+      padding-bottom: 1.5rem;
+    }
+
+    .receipt-item {
+      display: flex;
+      justify-content: space-between;
+      margin: 0.8rem 0;
+      font-size: 0.95rem;
+      color: #444;
+    }
+
+    .receipt-item-details {
+      flex: 1;
+    }
+
+    .receipt-item-price {
+      font-weight: 600;
+      min-width: 80px;
+      text-align: right;
+    }
+
+    .receipt-subtotal {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid #eee;
+      font-size: 0.9rem;
+      color: #666;
+    }
+
+    .receipt-total {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 1rem;
+      padding-top: 1rem;
+      font-weight: bold;
+      font-size: 1.2rem;
+      color: #333;
+    }
+
+    .qr-code {
+      text-align: center;
+      margin: 2rem auto;
+      padding: 1.5rem;
+      background: #f8f8f8;
+      border-radius: 8px;
+      width: fit-content;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.8rem;
+    }
+
+    .qr-code img {
+      display: block;
+      margin: 0 auto;
+    }
+
+    .qr-code-label {
+      font-size: 0.8rem;
+      color: #666;
+      text-align: center;
+    }
+
+    .receipt-footer {
+      text-align: center;
+      margin-top: 2rem;
+      padding-top: 1.5rem;
+      border-top: 2px dashed #e0e0e0;
+      font-size: 0.85rem;
+      color: #888;
+    }
+
+    .close-receipt {
+      display: block;
+      width: 100%;
+      padding: 1rem;
+      background-color: #333;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      margin-top: 2rem;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: background-color 0.2s;
+    }
+
+    .close-receipt:hover {
+      background-color: #444;
+    }
+
+    .nav-icon {
+      color: white;
+      font-size: 20px;
+      margin-left: 20px;
+      text-decoration: none;
+      transition: color 0.3s;
+    }
+
+    .nav-icon:hover {
+      color: #ddd;
+    }
+
+    .navbar-right {
+      display: flex;
+      align-items: center;
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="navbar">
+    <div class="logo">
+      <img src="pic.png" alt="Logo">
+    </div>
+    <div class="nav-links">
+      <a href="Shop.html">Shop</a>
+      <a href="Subscribe.html">Subscribe</a>
+      <a href="About.html">About</a>
+    </div>
+    <div class="navbar-right">
+      <a href="shopping basket.html" class="nav-icon" title="Cart">
+        <i class="fas fa-shopping-cart"></i>
+      </a>
+      <a href="order_history.html" class="nav-icon" title="Order History">
+        <i class="fas fa-history"></i>
+      </a>
+      <a href="marketplace.html" class="nav-icon" title="Marketplace">
+        <i class="fas fa-store"></i>
+      </a>
+      <a href="index.html" class="nav-icon" title="Logout">
+        <i class="fas fa-sign-out-alt"></i>
+      </a>
+    </div>
+  </nav>
+
+  <div class="container">
+    <!-- Left column -->
+    <div class="left">
+      <a class="back-link" href="shopping basket.html">← Back to Cart</a>
+      <h2>Items overview</h2>
+      <p>This is your order summary where you can review your order.</p>
+
+      <div id="purchase-items">
+        <!-- Items will be inserted here by JavaScript -->
+      </div>
+
+      <div class="total-price" id="total-price">
+        Total: ₱0.00
+      </div>
+
+      <div class="section-title">Payment Options</div>
+      <div class="radio-group">
+        <label><input type="radio" name="payment" value="mobile_pay" checked> Mobile Pay</label>
+        <label><input type="radio" name="payment" value="credit_card"> Credit Card</label>
+        <label><input type="radio" name="payment" value="paypal"> PayPal</label>
+      </div>
+    </div>
+
+    <!-- Right column -->
+    <div class="right">
+      <h2>Payment details</h2>
+      <p>Fill in your payment details and complete the order.</p>
+
+      <div class="form-group">
+        <input type="email" placeholder="Email Address" required>
+      </div>
+      <div class="form-group">
+        <input type="text" placeholder="Full Name" required>
+      </div>
+      <div class="form-group">
+        <input type="text" placeholder="Address" required>
+      </div>
+      <div class="form-group">
+        <input type="text" placeholder="City" required>
+      </div>
+      <div class="form-group">
+        <input type="text" placeholder="Zip Code" required>
+      </div>
+
+      <button class="finish-button" onclick="completePurchase()">Complete Purchase</button>
+    </div>
+  </div>
+
+  <!-- Receipt Modal -->
+  <div class="receipt-modal" id="receiptModal">
+    <div class="receipt-content">
+      <div class="receipt-header">
+        <h2>Thank You!</h2>
+        <p id="receiptDate"></p>
+      </div>
+      
+      <div class="receipt-store-info">
+        <div>Your Fashion Store</div>
+        <div>123 Fashion Street</div>
+        <div>Contact: (555) 123-4567</div>
+      </div>
+
+      <div class="receipt-items" id="receiptItems">
+        <!-- Receipt items will be inserted here -->
+      </div>
+
+      <div class="receipt-subtotal">
+        <span>Subtotal</span>
+        <span id="receiptSubtotal"></span>
+      </div>
+
+      <div class="receipt-subtotal">
+        <span>Tax (10%)</span>
+        <span id="receiptTax"></span>
+      </div>
+
+      <div class="receipt-total">
+        <span>Total</span>
+        <span id="receiptTotal"></span>
+      </div>
+
+      <div class="qr-code" id="qrCode">
+        <div class="qr-code-label">Scan to verify purchase</div>
+        <div id="qrCodeImage"></div>
+      </div>
+
+      <div class="receipt-footer">
+        <p>Thank you for shopping with us!</p>
+        <p>Visit us again soon</p>
+      </div>
+
+      <button class="close-receipt" onclick="closeReceipt()">Close Receipt</button>
+    </div>
+  </div>
+
+  <script>
+    // Get cart from localStorage
+    let cart = [];
+    const purchaseItemsContainer = document.getElementById('purchase-items');
+    const totalPriceElement = document.getElementById('total-price');
+
+    // Function to display purchase items
+    function displayPurchaseItems() {
+      // Check for purchase items from localStorage
+      const purchaseData = JSON.parse(localStorage.getItem('purchaseDetails'));
+      console.log('Purchase data from localStorage:', purchaseData);
+      
+      if (!purchaseData || !purchaseData.items || purchaseData.items.length === 0) {
+        console.log('No purchase data found in localStorage');
+        purchaseItemsContainer.innerHTML = `
+          <div class="empty-cart">
+            <h3>No items to purchase</h3>
+            <p>Please add items to your cart before checkout.</p>
+          </div>
+        `;
+        totalPriceElement.textContent = 'Total: ₱0.00';
+        return;
+      }
+
+      // Clear container
+      purchaseItemsContainer.innerHTML = '';
+      console.log('Displaying items:', purchaseData.items);
+
+      // Display all items
+      purchaseData.items.forEach(item => {
+        const itemElement = document.createElement('div');
+        itemElement.className = 'item-box';
+        
+        // Ensure we have valid numbers for price calculations
+        const originalTotal = parseFloat(item.originalTotal || 0).toFixed(2);
+        const discountedTotal = parseFloat(item.discountedTotal || 0).toFixed(2);
+
+        itemElement.innerHTML = `
+          <img src="${item.image_url}" alt="${item.item_name}" class="item-img">
+          <div class="item-details">
+            <h3>${item.item_name}</h3>
+            <p>Quantity: ${item.quantity}</p>
+            <p>Original Price: ₱${originalTotal}</p>
+            <p>Discount: 20%</p>
+            <p>Final Price: ₱${discountedTotal}</p>
+          </div>
+        `;
+        purchaseItemsContainer.appendChild(itemElement);
+      });
+
+      // Update total price with proper formatting
+      const finalTotal = parseFloat(purchaseData.totalDiscounted || 0).toFixed(2);
+      totalPriceElement.textContent = `Total: ₱${finalTotal}`;
+    }
+
+    // Function to complete purchase
+    async function completePurchase() {
+      try {
+        // Get all required input fields
+        const email = document.querySelector('input[type="email"]').value.trim();
+        const fullName = document.querySelector('input[placeholder="Full Name"]').value.trim();
+        const address = document.querySelector('input[placeholder="Address"]').value.trim();
+        const city = document.querySelector('input[placeholder="City"]').value.trim();
+        const zipCode = document.querySelector('input[placeholder="Zip Code"]').value.trim();
+
+        console.log('Form data:', { email, fullName, address, city, zipCode });
+
+        // Form validation
+        if (!email || !fullName || !address || !city || !zipCode) {
+          alert('Please fill in all required fields before completing the purchase.');
+          return;
+        }
+
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+          alert('Please enter a valid email address.');
+          return;
+        }
+
+        // Get current user
+        const { data: { user }, error: userError } = await supabase.auth.getUser();
+        
+        if (userError) {
+          console.error('User error:', userError);
+          throw new Error('Authentication error: ' + userError.message);
+        }
+
+        if (!user) {
+          alert('Please login to complete purchase');
+          window.location.href = 'index.html';
+          return;
+        }
+
+        console.log('Current user:', user);
+
+        // Get purchase data from localStorage
+        const purchaseData = JSON.parse(localStorage.getItem('purchaseDetails'));
+        console.log('Purchase data:', purchaseData);
+        
+        if (!purchaseData || !purchaseData.items || purchaseData.items.length === 0) {
+          alert('No items to purchase. Please add items to your cart first.');
+          return;
+        }
+
+        // Get payment method
+        const paymentMethod = document.querySelector('input[name="payment"]:checked').value;
+
+        // Prepare order history records
+        const orderRecords = purchaseData.items.map(item => {
+          const originalTotal = parseFloat(item.originalTotal || 0);
+          const discountedTotal = parseFloat(item.discountedTotal || 0);
+          const tax = discountedTotal * 0.1; // 10% tax
+
+          return {
+            user_id: user.id,
+            order_date: new Date().toISOString(),
+            customer_name: fullName,
+            customer_email: email,
+            shipping_address: `${address}, ${city}, ${zipCode}`,
+            item_name: item.item_name,
+            quantity: parseInt(item.quantity),
+            unit_price: parseFloat(item.item_price),
+            image_url: item.image_url,
+            subtotal: discountedTotal,
+            tax: tax,
+            total: discountedTotal + tax,
+            payment_method: paymentMethod,
+            order_status: 'completed'
+          };
+        });
+
+        console.log('Order records to insert:', orderRecords);
+
+        // Insert orders into Supabase
+        const { data: insertedOrders, error: insertError } = await supabase
+          .from('order_history')
+          .insert(orderRecords);
+
+        if (insertError) {
+          console.error('Insert error details:', insertError);
+          throw new Error(`Failed to save order: ${insertError.message || 'Unknown error'}`);
+        }
+
+        console.log('Orders inserted successfully:', insertedOrders);
+
+        // Show receipt
+        showReceipt(purchaseData, fullName, email);
+
+        // Clear the purchase data from localStorage
+        localStorage.removeItem('purchaseDetails');
+
+        // Clear the cart after successful purchase
+        await clearCart();
+
+        alert('Purchase completed successfully!');
+
+      } catch (error) {
+        console.error('Error in completePurchase:', error);
+        console.error('Error stack:', error.stack);
+        alert('Error completing purchase: ' + (error.message || 'Unknown error occurred'));
+      }
+    }
+
+    // Function to show receipt
+    function showReceipt(purchaseData, fullName, email) {
+      const modal = document.getElementById('receiptModal');
+      const receiptDate = document.getElementById('receiptDate');
+      const receiptItems = document.getElementById('receiptItems');
+      const receiptSubtotal = document.getElementById('receiptSubtotal');
+      const receiptTax = document.getElementById('receiptTax');
+      const receiptTotal = document.getElementById('receiptTotal');
+      const qrCodeImage = document.getElementById('qrCodeImage');
+
+      // Generate receipt date
+      const date = new Date();
+      receiptDate.textContent = date.toLocaleString();
+
+      // Clear and populate receipt items
+      receiptItems.innerHTML = '';
+      let subtotal = 0;
+
+      purchaseData.items.forEach(item => {
+        const itemElement = document.createElement('div');
+        itemElement.className = 'receipt-item';
+        
+        // Ensure we have valid numbers
+        const quantity = parseInt(item.quantity || 1);
+        const discountedTotal = parseFloat(item.discountedTotal || 0);
+        
+        itemElement.innerHTML = `
+          <div class="receipt-item-details">
+            ${item.item_name} x${quantity}
+          </div>
+          <div class="receipt-item-price">₱${discountedTotal.toFixed(2)}</div>
+        `;
+        receiptItems.appendChild(itemElement);
+        subtotal += discountedTotal;
+      });
+
+      // Calculate totals
+      const tax = subtotal * 0.1;
+      const total = subtotal + tax;
+
+      // Update receipt totals
+      receiptSubtotal.textContent = `₱${subtotal.toFixed(2)}`;
+      receiptTax.textContent = `₱${tax.toFixed(2)}`;
+      receiptTotal.textContent = `₱${total.toFixed(2)}`;
+
+      // Generate QR code with minimal data
+      qrCodeImage.innerHTML = '';
+      try {
+        // Create a compact version of the order data
+        const qrData = {
+          t: total.toFixed(2), // total
+          n: fullName.split(' ')[0], // first name only
+          d: date.toISOString().split('T')[0] // date only
+        };
+        
+        new QRCode(qrCodeImage, {
+          text: JSON.stringify(qrData),
+          width: 128,
+          height: 128,
+          correctLevel: QRCode.CorrectLevel.L // Use lower error correction for smaller QR code
+        });
+      } catch (error) {
+        console.error('QR Code generation error:', error);
+        qrCodeImage.innerHTML = '<p>Unable to generate QR code</p>';
+      }
+
+      // Store order information in localStorage
+      const orderInfo = {
+        date: date.toLocaleString(),
+        items: purchaseData.items.map(item => ({
+          ...item,
+          discountedTotal: parseFloat(item.discountedTotal || 0).toFixed(2)
+        })),
+        subtotal: subtotal.toFixed(2),
+        tax: tax.toFixed(2),
+        total: total.toFixed(2),
+        customer: {
+          name: fullName,
+          email: email
+        },
+        status: 'Completed'
+      };
+
+      // Get existing orders or initialize empty array
+      const existingOrders = JSON.parse(localStorage.getItem('orderHistory')) || [];
+      existingOrders.unshift(orderInfo); // Add new order at the beginning
+      localStorage.setItem('orderHistory', JSON.stringify(existingOrders));
+
+      // Show modal
+      modal.style.display = 'flex';
+    }
+
+    // Function to close receipt
+    function closeReceipt() {
+      const modal = document.getElementById('receiptModal');
+      modal.style.display = 'none';
+      window.location.href = 'order_history.html';
+    }
+
+    // Call displayPurchaseItems when the page loads
+    document.addEventListener('DOMContentLoaded', () => {
+      console.log('DOM loaded, initializing purchase page...');
+      const purchaseItemsContainer = document.getElementById('purchase-items');
+      const totalPriceElement = document.getElementById('total-price');
+      displayPurchaseItems();
+    });
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Subscribe - ThriftShop</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<script>
+  const { createClient } = supabase;
+  const supabaseClient = createClient(
+    'https://egnxlyydywpmllfnafnk.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVnbnhseXlkeXdwbWxsZm5hZm5rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc5MTMzMDIsImV4cCI6MjA2MzQ4OTMwMn0.-ukPGzSlSPCk792kRqxZghELfctMjQe5i40r-mdpt1w'
+  );
+
+  async function handleSubscription() {
+    const { data: { user } } = await supabaseClient.auth.getUser();
+
+    if (!user) {
+      alert("You must be logged in to subscribe.");
+      return;
+    }
+
+    const email = document.getElementById('subscriptionEmail').value;
+
+    const { error } = await supabaseClient.from('subscriptions').insert([
+      {
+        user_id: user.id,
+        email: email
+      }
+    ]);
+
+    if (error) {
+      alert("Subscription failed: " + error.message);
+    } else {
+      alert("Subscription successful!");
+      closeModal();
+    }
+  }
+</script>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #666;
+      color: white;
+      text-align: center;
+    }
+
+    .navbar {
+      background-color: #d3d3d3;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 30px;
+      transition: background-color 0.3s ease;
+    }
+
+    .navbar-left,
+    .navbar-right {
+      display: flex;
+      align-items: center;
+    }
+
+    .navbar-left a {
+      color: rgb(19, 17, 17);
+      text-decoration: none;
+      margin-right: 25px;
+      font-size: 16px;
+      transition: color 0.3s ease;
+    }
+
+    .navbar-left a:hover {
+      color: #444;
+    }
+
+    .logo-box {
+      background-color: white;
+      padding: 4px;
+      margin-right: 25px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 4px;
+    }
+
+    .logo-box img {
+      width: 40px;
+      height: 40px;
+    }
+
+    .search-box {
+      position: relative;
+    }
+
+    .search-box input {
+      padding: 6px 10px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      width: 200px;
+    }
+
+    .recent-searches {
+      position: absolute;
+      top: 35px;
+      left: 0;
+      background-color: white;
+      color: black;
+      width: 100%;
+      border: 1px solid #ccc;
+      max-height: 120px;
+      overflow-y: auto;
+      display: none;
+      z-index: 10;
+    }
+
+    .recent-searches div {
+      padding: 8px;
+      cursor: pointer;
+      border-bottom: 1px solid #eee;
+    }
+
+    .recent-searches div:hover {
+      background-color: #f0f0f0;
+    }
+
+    .container {
+      padding: 40px 20px;
+    }
+
+    .container h1 {
+      font-size: 32px;
+      margin-bottom: 10px;
+    }
+
+    .container p.subtext {
+      font-size: 14px;
+      color: #ccc;
+      margin-bottom: 40px;
+      max-width: 700px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .features {
+      display: flex;
+      justify-content: center;
+      gap: 70px;
+      margin-bottom: 70px;
+      flex-wrap: wrap;
+    }
+
+    .feature-box {
+      background-color: white;
+      color: black;
+      width: 260px;
+      padding: 30px 20px;
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      cursor: pointer;
+    }
+
+    .feature-box:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .feature-box .icon {
+      width: 100%;
+      height: auto;
+      margin-bottom: 15px;
+    }
+
+    .feature-box .icon img {
+      width: 100%;
+      height: auto;
+      border-radius: 10px;
+    }
+
+    .feature-box p {
+      font-size: 15px;
+      font-weight: bold;
+      color: #333;
+    }
+
+    .subscribe-button {
+      background-color: #444;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+      transition: background-color 0.3s ease;
+    }
+
+    .subscribe-button:hover {
+      background-color: #222;
+    }
+
+    .footer-note {
+      font-size: 12px;
+      color: #aaa;
+    }
+
+    /* Modal styles */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 999;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+    }
+
+    .modal-content {
+      background-color: white;
+      color: black;
+      padding: 30px;
+      border-radius: 8px;
+      width: 300px;
+      margin: 100px auto;
+      position: relative;
+      text-align: center;
+    }
+
+    .modal-content input {
+      padding: 10px;
+      width: 100%;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+
+    .close {
+      position: absolute;
+      right: 15px;
+      top: 10px;
+      font-size: 24px;
+      font-weight: bold;
+      color: #999;
+      cursor: pointer;
+    }
+
+    .close:hover {
+      color: #333;
+    }
+
+    .nav-icon {
+      color: white;
+      font-size: 20px;
+      margin-left: 20px;
+      text-decoration: none;
+      transition: color 0.3s;
+    }
+
+    .nav-icon:hover {
+      color: #ddd;
+    }
+
+    .navbar-right {
+      display: flex;
+      align-items: center;
+    }
+
+    /* Media Queries for Responsive Design */
+    @media screen and (max-width: 1200px) {
+      .features {
+        gap: 40px;
+      }
+    }
+
+    @media screen and (max-width: 768px) {
+      .navbar {
+        padding: 10px 15px;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .navbar-left, .navbar-right {
+        width: 100%;
+        justify-content: center;
+        gap: 15px;
+      }
+
+      .container {
+        padding: 20px 10px;
+      }
+
+      .features {
+        gap: 30px;
+      }
+
+      .feature-box {
+        width: calc(50% - 20px);
+        min-width: 220px;
+      }
+    }
+
+    @media screen and (max-width: 480px) {
+      .navbar-left a {
+        font-size: 14px;
+        margin-right: 15px;
+      }
+
+      .logo-box {
+        margin-right: 15px;
+      }
+
+      .logo-box img {
+        height: 30px;
+        width: 30px;
+      }
+
+      .container h1 {
+        font-size: 24px;
+      }
+
+      .feature-box {
+        width: 100%;
+        max-width: 300px;
+      }
+
+      .modal-content {
+        width: 90%;
+        margin: 50px auto;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <div class="navbar">
+    <div class="navbar-left">
+      <div class="logo-box"><img src="pic.png" alt="Logo" /></div>
+      <a href="shop.html">Shop</a>
+      <a href="subscribe.html">Subscribe</a>
+      <a href="about.html">About</a>
+    </div>
+    <div class="navbar-right">
+      <a href="shopping basket.html" class="nav-icon" title="Cart">
+        <i class="fas fa-shopping-cart"></i>
+      </a>
+      <a href="order_history.html" class="nav-icon" title="Order History">
+        <i class="fas fa-history"></i>
+      </a>
+      <a href="marketplace.html" class="nav-icon" title="Marketplace">
+        <i class="fas fa-store"></i>
+      </a>
+      <a href="index.html" class="nav-icon" title="Logout">
+        <i class="fas fa-sign-out-alt"></i>
+      </a>
+    </div>
+  </div>
+
+  <!-- Page Content -->
+  <div class="container">
+    <h1>Love our Clothing Line?</h1>
+    <p class="subtext">Join our yearly subscription and save 40%! Plus, get an extra piece on us. No commitments: easy one click cancellation.</p>
+
+    <div class="features">
+      <div class="feature-box">
+        <div class="icon">
+          <img src="s1.png" alt="Pick clothes">
+        </div>
+        <p>Pick your favorite clothes</p>
+      </div>
+   
+      <div class="feature-box">
+        <div class="icon">
+          <img src="pic.png" alt="Cancel anytime">
+        </div>
+        <p>Thrift Anytime</p>
+      </div>
+    </div>
+
+    <button class="subscribe-button" onclick="openModal()">Subscribe now</button>
+    <p class="footer-note">Existing subscriber? Change your preferences here.</p>
+  </div>
+
+  <!-- Subscription Modal -->
+  <div id="subscribeModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeModal()">&times;</span>
+      <h2>Subscribe to ThriftShop</h2>
+      <input type="email" id="subscriptionEmail" placeholder="Enter your email" />
+      <button class="subscribe-button" onclick="handleSubscription()">Confirm Subscription</button>
+    </div>
+  </div>
+
+  <!-- JavaScript -->
+  <script>
+    // Modal logic
+    function openModal() {
+      document.getElementById("subscribeModal").style.display = "block";
+    }
+
+    function closeModal() {
+      document.getElementById("subscribeModal").style.display = "none";
+    }
+
+    // Search with recent suggestions
+    const searchInput = document.getElementById('searchInput');
+    const recentSearchesBox = document.getElementById('recentSearches');
+    let recentSearches = [];
+
+    function showSuggestions() {
+      const value = searchInput.value.trim();
+      if (value) {
+        if (!recentSearches.includes(value)) {
+          recentSearches.unshift(value);
+          if (recentSearches.length > 5) recentSearches.pop();
+        }
+
+        recentSearchesBox.innerHTML = recentSearches.map(search => 
+          '<div onclick="selectSearch(\'' + search + '\')">' + search + '</div>'
+        ).join('');
+        recentSearchesBox.style.display = 'block';
+      } else {
+        recentSearchesBox.style.display = 'none';
+      }
+    }
+
+    function selectSearch(value) {
+      searchInput.value = value;
+      recentSearchesBox.style.display = 'none';
+      window.location.href = 'items.html?query=' + encodeURIComponent(value);
+    }
+
+    document.addEventListener('click', function(e) {
+      if (!document.querySelector('.search-box').contains(e.target)) {
+        recentSearchesBox.style.display = 'none';
+      }
+    });
+  </script>
+</body>
+</html>

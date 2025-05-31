@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Shop Page - ThriftShop</title>
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #d3d3d3;
+    }
+
+    .navbar {
+      background-color: #555;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 30px;
+      transition: background-color 0.3s ease;
+    }
+
+    .navbar-left,
+    .navbar-right {
+      display: flex;
+      align-items: center;
+    }
+
+    .navbar-left a {
+      color: rgb(216, 203, 203);
+      text-decoration: none;
+      margin-right: 25px;
+      font-size: 16px;
+      transition: color 0.3s ease;
+    }
+
+    .navbar-left a:hover {
+      color: white;
+    }
+
+    .logo-box {
+      background-color: white;
+      padding: 4px;
+      margin-right: 25px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 4px;
+    }
+
+    .logo-box img {
+      width: 40px;
+      height: 40px;
+    }
+
+    .search-box {
+      position: relative;
+    }
+
+    .search-box input {
+      padding: 6px 10px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      width: 200px;
+    }
+
+    .recent-searches {
+      position: absolute;
+      top: 35px;
+      left: 0;
+      background-color: white;
+      width: 100%;
+      border: 1px solid #ccc;
+      max-height: 120px;
+      overflow-y: auto;
+      display: none;
+      z-index: 10;
+    }
+
+    .recent-searches div {
+      padding: 8px;
+      cursor: pointer;
+      border-bottom: 1px solid #eee;
+    }
+
+    .recent-searches div:hover {
+      background-color: #f0f0f0;
+    }
+
+    .header {
+      text-align: center;
+      padding: 40px 20px 10px;
+    }
+
+    .header h1 {
+      margin-bottom: 10px;
+    }
+
+    .header p {
+      color: #000000;
+    }
+
+    .product-container {
+      display: flex;
+      justify-content: center;
+      padding: 20px;
+      flex-wrap: wrap;
+      gap: 30px;
+    }
+
+    .product-card {
+      background-color: white;
+      width: 250px;
+      padding: 20px;
+      border-radius: 8px;
+      position: relative;
+      text-align: center;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      cursor: pointer;
+    }
+
+    .product-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .new-label {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background-color: white;
+      border: 1px solid #ccc;
+      border-radius: 50%;
+      padding: 5px 10px;
+      font-size: 10px;
+      font-weight: bold;
+    }
+
+    .product-image {
+      width: 100%;
+      height: 150px;
+      margin-bottom: 15px;
+      border-radius: 6px;
+      object-fit: cover;
+    }
+
+    .product-title {
+      font-weight: bold;
+      font-size: 16px;
+      margin-bottom: 10px;
+    }
+
+    .product-desc {
+      font-size: 13px;
+      color: #444;
+      margin-bottom: 15px;
+    }
+
+    .buy-button {
+      background-color: #444;
+      color: white;
+      padding: 8px 12px;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+      border-radius: 4px;
+      transition: background-color 0.3s ease;
+    }
+
+    .buy-button:hover {
+      background-color: #222;
+    }
+
+    .nav-icon {
+      color: white;
+      font-size: 20px;
+      margin-left: 20px;
+      text-decoration: none;
+      transition: color 0.3s;
+    }
+
+    .nav-icon:hover {
+      color: #ddd;
+    }
+
+    /* Media Queries for Responsive Design */
+    @media screen and (max-width: 1200px) {
+      .product-container {
+        gap: 20px;
+      }
+      
+      .product-card {
+        width: 220px;
+      }
+    }
+
+    @media screen and (max-width: 768px) {
+      .navbar {
+        padding: 10px 15px;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .navbar-left, .navbar-right {
+        width: 100%;
+        justify-content: center;
+        gap: 15px;
+      }
+
+      .product-container {
+        padding: 10px;
+      }
+
+      .product-card {
+        width: calc(50% - 25px);
+        min-width: 200px;
+      }
+    }
+
+    @media screen and (max-width: 480px) {
+      .product-container {
+        gap: 15px;
+      }
+
+      .product-card {
+        width: 100%;
+        max-width: 300px;
+      }
+
+      .navbar-left a {
+        font-size: 14px;
+        margin-right: 15px;
+      }
+
+      .logo-box {
+        margin-right: 15px;
+      }
+
+      .logo-box img {
+        height: 30px;
+        width: 30px;
+      }
+
+      .header {
+        padding: 20px 10px;
+      }
+
+      .header h1 {
+        font-size: 24px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <div class="navbar">
+    <div class="navbar-left">
+      <div class="logo-box"><img src="pic.png" alt="Logo" /></div>
+      <a href="shop.html">Shop</a>
+      <a href="subscribe.html">Subscribe</a>
+      <a href="about.html">About</a>
+    </div>
+    <div class="navbar-right">
+      <a href="shopping basket.html" class="nav-icon" title="Cart">
+        <i class="fas fa-shopping-cart"></i>
+      </a>
+      <a href="order_history.html" class="nav-icon" title="Order History">
+        <i class="fas fa-history"></i>
+      </a>
+      <a href="marketplace.html" class="nav-icon" title="Marketplace">
+        <i class="fas fa-store"></i>
+      </a>
+      <a href="index.html" class="nav-icon" title="Logout">
+        <i class="fas fa-sign-out-alt"></i>
+      </a>
+    </div>
+  </div>
+
+  <!-- Page Content -->
+  <div class="header">
+    <h1>Just in!</h1>
+    <p>Browse our new Arrivals!</p>
+  </div>
+
+ <div class="product-container">
+  <div class="product-card" onclick="window.location.href='carhartt.html'">
+    <div class="new-label">NEW<br>PRODUCT</div>
+    <img src="ch.webp" alt="Carhartt" class="product-image" />
+    <div class="product-title">Carhartt</div>
+    <div class="product-desc">
+      This Carhartt piece delivers rugged durability and all-day comfort, built for work and everyday wear.
+    </div>
+    <button class="buy-button" onclick="event.stopPropagation(); window.location.href='carhartt.html'">Buy now</button>
+  </div>
+
+  <div class="product-card" onclick="window.location.href='chromehearts.html'">
+    <img src="ChromeH.jpg" alt="Chromehearts" class="product-image" />
+    <div class="product-title">Chromehearts</div>
+    <div class="product-desc">
+      This Chrome Hearts piece delivers bold style and premium craftsmanship, blending rugged edge with timeless streetwear appeal.
+    </div>
+    <button class="buy-button" onclick="event.stopPropagation(); window.location.href='chromehearts.html'">Buy now</button>
+  </div>
+
+  <div class="product-card" onclick="window.location.href='Stussy.html'">
+    <div class="new-label">NEW<br>PRODUCT</div>
+    <img src="stussy.jpg" alt="Stussy" class="product-image" />
+    <div class="product-title">Stussy</div>
+    <div class="product-desc">
+     This Stüssy piece blends laid-back California vibes with streetwise edge, offering timeless style, comfort, and durability for everyday wear.
+    </div>
+    <button class="buy-button" onclick="event.stopPropagation(); window.location.href='Stussy.html'">Buy now</button>
+  </div>
+</div>
+
+ <script>
+  const searchInput = document.getElementById('searchInput');
+  const recentSearchesBox = document.getElementById('recentSearches');
+  let recentSearches = [];
+
+  function showSuggestions() {
+    const value = searchInput.value.trim();
+    if (value) {
+      if (!recentSearches.includes(value)) {
+        recentSearches.unshift(value);
+        if (recentSearches.length > 5) recentSearches.pop();
+      }
+
+      recentSearchesBox.innerHTML = recentSearches
+        .map(search => `<div onclick="selectSearch('${search}')">${search}</div>`)
+        .join('');
+      recentSearchesBox.style.display = 'block';
+    } else {
+      recentSearchesBox.style.display = 'none';
+    }
+  }
+
+  function selectSearch(value) {
+    searchInput.value = value;
+    recentSearchesBox.style.display = 'none';
+    window.location.href = `items.html?query=${encodeURIComponent(value)}`;
+  }
+
+  document.addEventListener('click', function (e) {
+    if (!document.querySelector('.search-box').contains(e.target)) {
+      recentSearchesBox.style.display = 'none';
+    }
+  });
+</script>
+
+</body>
+</html>

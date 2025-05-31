@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Thriftshop</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .container {
+      text-align: center;
+      width: 300px;
+    }
+
+    .logo {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  margin: 0 auto 20px;
+  display: block;
+  object-fit: cover;
+}
+
+    h1 {
+      margin-bottom: 20px;
+      font-size: 24px;
+      font-weight: 500;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    input[type="text"],
+    input[type="password"] {
+      padding: 10px;
+      font-size: 14px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    .actions {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 10px;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 10px 15px;
+      text-decoration: none;
+      font-size: 14px;
+      border-radius: 4px;
+      cursor: pointer;
+      text-align: center;
+    }
+
+    .primary {
+      background-color: #000;
+      color: #fff;
+      border: none;
+    }
+
+    .secondary {
+      background-color: #fff;
+      color: #000;
+      border: 1px solid #ccc;
+    }
+
+    .link {
+      background: none;
+      border: none;
+      color: #007BFF;
+      padding: 0;
+      text-align: right;
+    }
+
+    .view {
+      display: none;
+    }
+
+    .active {
+      display: block;
+    }
+  </style>
+
+  <!-- Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <script>
+     const { createClient } = supabase;
+  const supabaseClient = createClient(
+    'https://egnxlyydywpmllfnafnk.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVnbnhseXlkeXdwbWxsZm5hZm5rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc5MTMzMDIsImV4cCI6MjA2MzQ4OTMwMn0.-ukPGzSlSPCk792kRqxZghELfctMjQe5i40r-mdpt1w'
+  );
+
+  // Remove or comment out auto-redirect
+  /*
+  supabaseClient.auth.getSession().then(({ data }) => {
+    if (data?.session) {
+      window.location.href = 'dashboard.html';
+    }
+  });
+  */
+
+  function showView(id) {
+    document.querySelectorAll('.view').forEach(view => view.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+  }
+
+  async function handleSignup(event) {
+    event.preventDefault();
+
+    const email = document.getElementById('signup-username').value;
+    const username = document.getElementById('signup-displayname').value;
+    const password = document.getElementById('signup-password').value;
+
+    const { data, error } = await supabaseClient.auth.signUp({
+      email,
+      password
+    });
+
+    if (error) {
+      alert("Sign up failed: " + error.message);
+      return;
+    }
+
+    const user = data.user;
+    if (user) {
+      const { error: insertError } = await supabaseClient
+        .from('users')
+        .insert([{ user_id: user.id, email: email, username: username }]);
+
+      if (insertError) {
+        alert("Database insert error: " + insertError.message);
+        return;
+      }
+
+      window.location.href = 'dashboard.html';
+    }
+  }
+
+ 
+ async function handleLogin(event) {
+  event.preventDefault();
+
+  const email = document.getElementById('login-username').value;
+  const password = document.getElementById('login-password').value;
+
+  const { data, error } = await supabaseClient.auth.signInWithPassword({
+    email,
+    password
+  });
+
+  if (error) {
+    alert("Login failed: " + error.message);
+  } else {
+    // Insert login log into login_logs table
+    const user = data.user;
+    if (user) {
+      await supabaseClient.from('login_logs').insert([
+        { user_id: user.id, email: user.email }
+      ]);
+    }
+
+    window.location.href = 'dashboard.html';
+  }
+}
+  </script>
+</head>
+<body>
+  <div class="container">
+    <img src="pic.png" alt="Logo" class="logo" />
+    <h1>Thriftshop</h1>
+
+    <!-- Landing Page -->
+    <div id="landing" class="view active">
+      <a href="#" class="btn primary" onclick="showView('login')">Log in</a>
+      <a href="#" class="btn secondary" onclick="showView('signup')">Sign up</a>
+    </div>
+
+    <!-- Login Form -->
+    <div id="login" class="view">
+      <form onsubmit="handleLogin(event)">
+        <input type="text" id="login-username" placeholder="Email" required>
+        <input type="password" id="login-password" placeholder="Password" required>
+        <div class="actions">
+          <button class="btn primary" type="submit">Log in</button>
+          <a href="#" class="btn link" onclick="showView('signup')">Sign up</a>
+        </div>
+      </form>
+    </div>
+
+    <!-- Signup Form -->
+    <div id="signup" class="view">
+      <form onsubmit="handleSignup(event)">
+        <input type="text" id="signup-username" placeholder="Email" required>
+        <input type="text" id="signup-displayname" placeholder="Username" required>
+        <input type="password" id="signup-password" placeholder="Password" required>
+        <div class="actions">
+          <button class="btn primary" type="submit">Sign up</button>
+          <a href="#" class="btn link" onclick="showView('login')">Log in</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</body>
+</html>

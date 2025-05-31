@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Carhartt - ThriftShop</title>
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <script>
+    window.createClient = supabase.createClient;
+  </script>
+  <script src="cart.js"></script>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #d3d3d3;
+    }
+
+    /* Navbar */
+    .navbar {
+      background-color: #555;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 30px;
+    }
+
+    .navbar-left,
+    .navbar-right {
+      display: flex;
+      align-items: center;
+    }
+
+    .navbar-left a {
+      color: rgb(216, 203, 203);
+      text-decoration: none;
+      margin-right: 25px;
+      font-size: 16px;
+      transition: color 0.3s;
+    }
+
+    .navbar-left a:hover {
+      color: white;
+    }
+
+    .logo-box {
+      background-color: white;
+      padding: 6px;
+      margin-right: 25px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+    }
+
+    .logo-box img {
+      height: 40px;
+      width: 40px;
+      object-fit: contain;
+    }
+
+    .search-box input {
+      padding: 6px 10px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      width: 200px;
+    }
+
+    .recent-searches {
+      padding: 10px 30px;
+      font-size: 14px;
+      color: #333;
+    }
+
+    .recent-searches span {
+      display: inline-block;
+      margin-right: 10px;
+      background-color: #eee;
+      padding: 5px 10px;
+      border-radius: 5px;
+    }
+
+    /* Header */
+    .header {
+      text-align: center;
+      padding: 40px 20px 10px;
+    }
+
+    .header h1 {
+      margin-bottom: 10px;
+    }
+
+    .header p {
+      color: #000000;
+    }
+
+   /* Product Category Cards */
+    .category-container {
+      display: grid;
+      grid-template-columns: repeat(3, 265px);
+      gap: 25px;
+      padding: 20px 40px;
+      justify-content: center;
+    }
+
+    .category-card {
+      background-color: white;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      transition: transform 0.3s, box-shadow 0.3s;
+      position: relative;
+      text-align: center;
+      padding: 15px;
+    }
+
+    .category-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 12px rgba(0,0,0,0.15);
+    }
+
+    .category-image {
+      width: 100%;
+      height: 150px;
+      object-fit: cover;
+      border-radius: 6px;
+      margin-bottom: 10px;
+    }
+
+    .category-title {
+      font-weight: bold;
+      font-size: 16px;
+      margin-bottom: 5px;
+    }
+
+    .category-price {
+      font-size: 14px;
+      color: #333;
+      margin-bottom: 5px;
+    }
+
+    .voucher {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background-color: red;
+      color: white;
+      font-size: 12px;
+      padding: 4px 8px;
+      border-radius: 4px;
+    }
+
+    .button-group {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .button-group button {
+      padding: 8px 12px;
+      border: none;
+      border-radius: 4px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .buy-btn {
+      background-color: #333;
+      color: white;
+    }
+
+    .add-btn {
+      background-color: #666;
+      color: white;
+    }
+
+    .buy-btn:hover, .add-btn:hover {
+      opacity: 0.85;
+      transform: scale(1.05);
+    }
+
+    /* Quantity Controls */
+    .quantity-controls {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin: 10px 0;
+    }
+
+    .quantity-btn {
+      background-color: transparent;
+      color: #000;
+      border: 1px solid #000;
+      width: 28px;
+      height: 28px;
+      border-radius: 0;
+      cursor: pointer;
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .quantity {
+      width: 45px;
+      height: 28px;
+      text-align: center;
+      border: 1px solid #000;
+      font-size: 14px;
+      background: transparent;
+      border-radius: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .quantity-btn:hover {
+      background-color: #000;
+      color: #fff;
+    }
+
+    .nav-icon {
+      color: white;
+      font-size: 20px;
+      margin-left: 20px;
+      text-decoration: none;
+      transition: color 0.3s;
+    }
+
+    .nav-icon:hover {
+      color: #ddd;
+    }
+
+    .navbar-right {
+      display: flex;
+      align-items: center;
+    }
+
+    /* Media Queries for Responsive Design */
+    @media screen and (max-width: 1200px) {
+      .category-container {
+        grid-template-columns: repeat(2, 265px);
+      }
+    }
+
+    @media screen and (max-width: 768px) {
+      .navbar {
+        padding: 10px 15px;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .navbar-left, .navbar-right {
+        width: 100%;
+        justify-content: center;
+        gap: 15px;
+      }
+
+      .category-container {
+        grid-template-columns: repeat(1, 265px);
+        padding: 10px;
+      }
+
+      .search-box input {
+        width: 100%;
+      }
+    }
+
+    @media screen and (max-width: 480px) {
+      .category-container {
+        grid-template-columns: 1fr;
+        gap: 15px;
+        padding: 10px;
+      }
+
+      .category-card {
+        width: 100%;
+        max-width: 300px;
+        margin: 0 auto;
+      }
+
+      .navbar-left a {
+        font-size: 14px;
+        margin-right: 15px;
+      }
+
+      .logo-box {
+        margin-right: 15px;
+      }
+
+      .logo-box img {
+        height: 30px;
+        width: 30px;
+      }
+
+      .header {
+        padding: 20px 10px;
+      }
+
+      .header h1 {
+        font-size: 24px;
+      }
+
+      .button-group {
+        flex-direction: column;
+      }
+
+      .button-group button {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <div class="navbar">
+    <div class="navbar-left">
+      <div class="logo-box">
+        <img src="pic.png" alt="Logo">
+      </div>
+      <a href="shop.html">Shop</a>
+      <a href="subscribe.html">Subscribe</a>
+      <a href="about.html">About</a>
+    </div>
+    <div class="navbar-right">
+      <a href="shopping basket.html" class="nav-icon" title="Cart">
+        <i class="fas fa-shopping-cart"></i>
+      </a>
+      <a href="order_history.html" class="nav-icon" title="Order History">
+        <i class="fas fa-history"></i>
+      </a>
+      <a href="marketplace.html" class="nav-icon" title="Marketplace">
+        <i class="fas fa-store"></i>
+      </a>
+      <a href="index.html" class="nav-icon" title="Logout">
+        <i class="fas fa-sign-out-alt"></i>
+      </a>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <div class="header">
+    <h1>Carhartt</h1>
+    <p>Check out our best picks with great discounts!</p>
+  </div>
+
+  <!-- Product Category Section -->
+  <div class="category-container">
+    <div class="category-card">
+      <div class="voucher">20% OFF</div>
+      <img src="c1.webp" alt="Carhartt Detroit" class="category-image">
+      <div class="category-title">Carhartt Detroit</div>
+      <div class="category-price">₱2,800</div>
+      <div class="quantity-controls">
+        <button class="quantity-btn" onclick="decrementQuantity(this)">-</button>
+        <span class="quantity">1</span>
+        <button class="quantity-btn" onclick="incrementQuantity(this)">+</button>
+      </div>
+      <div class="button-group">
+        <button class="buy-btn" onclick="buyNow(this)">Buy Now</button>
+        <button class="add-btn" onclick="addItemToCart(this)">Add to Cart</button>
+      </div>
+    </div>
+
+    <div class="category-card">
+      <div class="voucher">20% OFF</div>
+      <img src="c2.jpg" alt="Carhartt T-Shirt" class="category-image">
+      <div class="category-title">Carhartt T-Shirt</div>
+      <div class="category-price">₱1,500</div>
+      <div class="quantity-controls">
+        <button class="quantity-btn" onclick="decrementQuantity(this)">-</button>
+        <span class="quantity">1</span>
+        <button class="quantity-btn" onclick="incrementQuantity(this)">+</button>
+      </div>
+      <div class="button-group">
+        <button class="buy-btn" onclick="buyNow(this)">Buy Now</button>
+        <button class="add-btn" onclick="addItemToCart(this)">Add to Cart</button>
+      </div>
+    </div>
+
+    <div class="category-card">
+      <div class="voucher">20% OFF</div>
+      <img src="c3.jpg" alt="Carhartt Cap" class="category-image">
+      <div class="category-title">Carhartt Cap</div>
+      <div class="category-price">₱1,200</div>
+      <div class="quantity-controls">
+        <button class="quantity-btn" onclick="decrementQuantity(this)">-</button>
+        <span class="quantity">1</span>
+        <button class="quantity-btn" onclick="incrementQuantity(this)">+</button>
+      </div>
+      <div class="button-group">
+        <button class="buy-btn" onclick="buyNow(this)">Buy Now</button>
+        <button class="add-btn" onclick="addItemToCart(this)">Add to Cart</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+function incrementQuantity(btn) {
+    const quantitySpan = btn.parentElement.querySelector('.quantity');
+    let quantity = parseInt(quantitySpan.textContent);
+    quantitySpan.textContent = quantity + 1;
+}
+
+function decrementQuantity(btn) {
+    const quantitySpan = btn.parentElement.querySelector('.quantity');
+    let quantity = parseInt(quantitySpan.textContent);
+    if (quantity > 1) {
+        quantitySpan.textContent = quantity - 1;
+    }
+}
+
+function getItemDetails(btn) {
+    const card = btn.closest('.category-card');
+    const name = card.querySelector('.category-title').textContent;
+    let price;
+    
+    // Set correct prices for each item
+    switch(name) {
+        case 'Carhartt Detroit':
+            price = 2800;
+            break;
+        case 'Carhartt T-Shirt':
+            price = 1500;
+            break;
+        case 'Carhartt Cap':
+            price = 1200;
+            break;
+        default:
+            price = parseFloat(card.querySelector('.category-price').textContent.replace('₱', ''));
+    }
+
+    return {
+        name: name,
+        price: price,
+        quantity: parseInt(card.querySelector('.quantity').textContent),
+        category: 'Carhartt',
+        image: card.querySelector('.category-image').src
+    };
+}
+
+async function addItemToCart(btn) {
+    try {
+        const item = getItemDetails(btn);
+        await addToCart(item);
+        alert('Item added to cart successfully!');
+    } catch (error) {
+        console.error('Error adding to cart:', error);
+        alert('Error adding to cart. Please try again.');
+    }
+}
+
+async function buyNow(btn) {
+    try {
+        const item = getItemDetails(btn);
+        
+        // Use the addToPurchase function from cart.js
+        const success = await addToPurchase(item);
+        
+        if (success) {
+            // Redirect to purchase page
+            window.location.href = 'purchase.html';
+        }
+    } catch (error) {
+        console.error('Error processing purchase:', error);
+        alert('Error processing purchase. Please try again.');
+    }
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order History - ThriftShop</title>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script>
+        window.createClient = supabase.createClient;
+    </script>
+    <script src="cart.js"></script>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f2f2f2;
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #555;
+            padding: 15px 30px;
+        }
+
+        .navbar-left {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo {
+            background: white;
+            padding: 0.5rem 1rem;
+            margin-right: 25px;
+        }
+
+        .logo img {
+            height: 40px;
+            width: 40px;
+            object-fit: contain;
+        }
+
+        .navbar-left a {
+            color: rgb(216, 203, 203);
+            text-decoration: none;
+            margin-right: 25px;
+            font-size: 16px;
+            transition: color 0.3s;
+        }
+
+        .navbar-left a:hover {
+            color: white;
+        }
+
+        .nav-icon {
+            color: white;
+            font-size: 20px;
+            margin-left: 20px;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .nav-icon:hover {
+            color: #ddd;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .page-title {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .order-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .order-card {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #eee;
+        }
+
+        .order-date {
+            color: #666;
+            font-size: 1rem;
+        }
+
+        .order-status {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            background-color: #4CAF50;
+            color: white;
+            font-weight: bold;
+        }
+
+        .customer-info {
+            background: #f8f8f8;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+        }
+
+        .customer-info h3 {
+            margin: 0 0 1rem 0;
+            color: #333;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.8rem 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            color: #666;
+            font-size: 0.95rem;
+        }
+
+        .info-value {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .order-items {
+            margin-bottom: 2rem;
+        }
+
+        .order-items h3 {
+            margin: 0 0 1.5rem 0;
+            color: #333;
+        }
+
+        .order-item {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            padding: 1.5rem;
+            background: #f8f8f8;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .item-image {
+            width: 120px;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border: 4px solid white;
+        }
+
+        .item-details {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .item-name {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .item-quantity, .item-unit-price {
+            color: #666;
+            font-size: 1rem;
+        }
+
+        .item-price {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #333;
+            min-width: 120px;
+            text-align: right;
+        }
+
+        .order-summary {
+            background: #f8f8f8;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-top: 2rem;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.8rem 0;
+            font-size: 1rem;
+        }
+
+        .summary-label {
+            color: #666;
+        }
+
+        .summary-value {
+            font-weight: bold;
+            color: #333;
+            min-width: 120px;
+            text-align: right;
+        }
+
+        .total-row {
+            font-size: 1.3rem;
+            color: #333;
+            border-top: 2px solid #ddd;
+            margin-top: 0.5rem;
+            padding-top: 1rem;
+        }
+
+        .empty-orders {
+            text-align: center;
+            padding: 4rem 2rem;
+            background: white;
+            border-radius: 12px;
+            margin-top: 2rem;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .empty-orders h2 {
+            color: #333;
+            margin-bottom: 1rem;
+        }
+
+        .empty-orders p {
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: #666;
+            font-size: 1.1rem;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-left">
+            <div class="logo">
+                <img src="pic.png" alt="Logo">
+            </div>
+            <a href="shop.html">Shop</a>
+            <a href="subscribe.html">Subscribe</a>
+            <a href="about.html">About</a>
+        </div>
+        <div class="navbar-right">
+            <a href="shopping basket.html" class="nav-icon" title="Cart">
+                <i class="fas fa-shopping-cart"></i>
+            </a>
+            <a href="order_history.html" class="nav-icon" title="Order History">
+                <i class="fas fa-history"></i>
+            </a>
+            <a href="marketplace.html" class="nav-icon" title="Marketplace">
+                <i class="fas fa-store"></i>
+            </a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h1 class="page-title">Order History</h1>
+        <div id="orders-container" class="order-list">
+            <div class="loading">Loading your orders...</div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', loadOrders);
+
+        async function loadOrders() {
+            try {
+                const { data: { user }, error: userError } = await supabase.auth.getUser();
+                
+                if (userError || !user) {
+                    window.location.href = 'index.html';
+                    return;
+                }
+
+                const { data: orders, error } = await supabase
+                    .from('order_history')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                const container = document.getElementById('orders-container');
+
+                if (error) {
+                    throw error;
+                }
+
+                if (!orders || orders.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-orders">
+                            <h2>No Orders Yet</h2>
+                            <p>Your order history will appear here once you make a purchase.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                container.innerHTML = orders.map(order => `
+                    <div class="order-card">
+                        <div class="order-header">
+                            <div class="order-date">
+                                Order Date: ${new Date(order.created_at).toLocaleDateString()}
+                            </div>
+                            <div class="order-status">${order.order_status}</div>
+                        </div>
+                        
+                        <div class="customer-info">
+                            <h3>Customer Details</h3>
+                            <div class="info-row">
+                                <span class="info-label">Name:</span>
+                                <span class="info-value">${order.customer_name}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Email:</span>
+                                <span class="info-value">${order.customer_email}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Shipping Address:</span>
+                                <span class="info-value">${order.shipping_address}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Payment Method:</span>
+                                <span class="info-value">${order.payment_method}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="order-items">
+                            <h3>Order Items</h3>
+                            <div class="order-item">
+                                <img src="${order.image_url || 'placeholder.png'}" alt="${order.item_name}" class="item-image" onerror="this.src='pic.png'">
+                                <div class="item-details">
+                                    <div class="item-name">${order.item_name}</div>
+                                    <div class="item-quantity">Quantity: ${order.quantity}</div>
+                                    <div class="item-unit-price">Unit Price: ₱${order.unit_price.toFixed(2)}</div>
+                                </div>
+                                <div class="item-price">₱${(order.unit_price * order.quantity).toFixed(2)}</div>
+                            </div>
+                        </div>
+
+                        <div class="order-summary">
+                            <div class="summary-row">
+                                <span class="summary-label">Subtotal:</span>
+                                <span class="summary-value">₱${order.subtotal.toFixed(2)}</span>
+                            </div>
+                            <div class="summary-row">
+                                <span class="summary-label">Tax (10%):</span>
+                                <span class="summary-value">₱${order.tax.toFixed(2)}</span>
+                            </div>
+                            <div class="summary-row total-row">
+                                <span class="summary-label">Total:</span>
+                                <span class="summary-value">₱${order.total.toFixed(2)}</span>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+
+            } catch (error) {
+                console.error('Error loading orders:', error);
+                document.getElementById('orders-container').innerHTML = `
+                    <div class="empty-orders">
+                        <h2>Error Loading Orders</h2>
+                        <p>There was an error loading your orders. Please try again later.</p>
+                    </div>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Shopping Basket - ThriftShop</title>
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script>
+    window.createClient = supabase.createClient;
+  </script>
+  <script src="cart.js"></script>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #f2f2f2;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    .promo-banner {
+      background-color: #8bd450;
+      color: white;
+      text-align: center;
+      padding: 0.5rem;
+      font-weight: bold;
+    }
+    .navbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background-color: #e2e2e2;
+      padding: 1rem 2rem;
+    }
+    .navbar .logo {
+      background: white;
+      padding: 0.5rem 1rem;
+      font-weight: bold;
+    }
+    .navbar .logo img {
+      height: 40px;
+      width: 40px;
+      object-fit: contain;
+    }
+    .nav-links {
+      display: flex;
+      gap: 2rem;
+    }
+    .nav-links a {
+      text-decoration: none;
+      color: #333;
+      font-weight: bold;
+    }
+    .search-bar {
+      border: 1px solid #999;
+      padding: 0.5rem;
+      border-radius: 4px;
+      width: 200px;
+    }
+    .container {
+      flex: 1;
+      padding: 2rem;
+    }
+    .back-link {
+      margin-bottom: 1rem;
+      display: inline-block;
+      color: #333;
+      text-decoration: none;
+    }
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 2rem;
+    }
+    .bag-item {
+      display: flex;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      background-color: white;
+      margin-bottom: 2rem;
+      overflow: hidden;
+    }
+    .item-image {
+      width: 180px;
+      height: 140px;
+      object-fit: cover;
+    }
+    .item-info {
+      flex: 1;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .item-info h2 {
+      margin: 0;
+      font-size: 1.25rem;
+    }
+    .item-info .price {
+      background-color: #eee;
+      display: inline-block;
+      margin-top: 0.5rem;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      font-weight: bold;
+    }
+    .quantity-control {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem;
+      width: 180px;
+      border-left: 1px solid #ccc;
+    }
+    .quantity-control p {
+      font-weight: bold;
+    }
+    .quantity-buttons {
+      display: flex;
+      gap: 1rem;
+    }
+    .quantity-buttons button {
+      width: 30px;
+      height: 30px;
+      font-size: 1.2rem;
+      cursor: pointer;
+    }
+    .remove {
+      margin-top: 1rem;
+      font-size: 0.9rem;
+      color: #333;
+      cursor: pointer;
+    }
+    .options {
+      margin-bottom: 2rem;
+    }
+    .options label {
+      display: block;
+      margin-bottom: 1rem;
+      font-size: 0.95rem;
+    }
+    .actions {
+      display: flex;
+      gap: 1rem;
+    }
+    .actions button {
+      padding: 0.75rem 1.5rem;
+      font-size: 1rem;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .checkout {
+      background-color: #333;
+      color: white;
+    }
+    .back-store {
+      background-color: white;
+      border: 1px solid #ccc;
+    }
+    .cart-empty {
+      text-align: center;
+      padding: 2rem;
+      background: white;
+      border-radius: 4px;
+      margin: 2rem 0;
+    }
+    .total-price {
+      text-align: right;
+      font-size: 1.2rem;
+      font-weight: bold;
+      margin: 1rem 0;
+    }
+    .cart-item {
+      display: flex;
+      align-items: center;
+      padding: 15px;
+      margin-bottom: 15px;
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .cart-item img {
+      width: 100px;
+      height: 100px;
+      object-fit: cover;
+      margin-right: 20px;
+      border-radius: 4px;
+    }
+    .cart-item-details {
+      flex-grow: 1;
+    }
+    .cart-item-title {
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+    .cart-item-price {
+      color: #666;
+      margin-bottom: 5px;
+    }
+    .cart-item-quantity {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .cart-total {
+      text-align: right;
+      padding: 20px;
+      font-size: 1.2em;
+      font-weight: bold;
+    }
+    .empty-cart {
+      text-align: center;
+      padding: 40px;
+      color: #666;
+    }
+    .loading {
+      text-align: center;
+      padding: 2rem;
+      color: #666;
+    }
+    .error {
+      text-align: center;
+      padding: 2rem;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="logo">
+      <img src="pic.png" alt="Logo">
+    </div>
+    <div class="nav-links">
+      <a href="Shop.html">Shop</a>
+      <a href="Subscribe.html">Subscribe</a>
+      <a href="About.html">About</a>
+      <a href="order_history.html" class="nav-icon" title="Order History">
+        <i class="fas fa-history"></i>
+      </a>
+      <a href="marketplace.html" class="nav-icon" title="Marketplace">
+        <i class="fas fa-store"></i>
+      </a>
+    </div>
+  </nav>
+
+  <div class="container">
+    <a href="items.html" class="back-link">← Back to Shopping</a>
+    <h1>Shopping Cart</h1>
+
+    <div id="cart-container">
+      <!-- Cart items will be loaded here -->
+      <div class="loading">Loading cart items...</div>
+    </div>
+
+    <div class="cart-total">
+      Total: ₱<span id="cart-total-amount">0.00</span>
+    </div>
+
+    <div class="options">
+      <label><input type="checkbox" checked /> Buying as a Gift? Tick here to include gift wrapping.</label>
+      <label><input type="checkbox" /> Do you want to subscribe to our newsletter for limited offers and promotions?</label>
+    </div>
+
+    <div class="actions">
+      <button class="checkout" onclick="handleCheckout()">Go to checkout</button>
+      <button class="back-store" onclick="window.location.href='dashboard.html'">Back to store</button>
+    </div>
+  </div>
+
+  <script>
+    // Load cart items when the page loads
+    document.addEventListener('DOMContentLoaded', loadCartItems);
+
+    async function loadCartItems() {
+      try {
+        const container = document.getElementById('cart-container');
+        const totalElement = document.getElementById('cart-total-amount');
+        
+        // Show loading state
+        container.innerHTML = '<div class="loading">Loading cart items...</div>';
+        
+        const cartItems = await getCartItems();
+        
+        if (!cartItems || cartItems.length === 0) {
+          container.innerHTML = '<div class="empty-cart">Your cart is empty</div>';
+          totalElement.textContent = '0.00';
+          return;
+        }
+
+        let total = 0;
+        container.innerHTML = cartItems.map(item => {
+          total += item.item_price * item.quantity;
+          return `
+            <div class="cart-item" data-item-id="${item.id}">
+              <img src="${item.image_url}" alt="${item.item_name}">
+              <div class="cart-item-details">
+                <div class="cart-item-title">${item.item_name}</div>
+                <div class="cart-item-price">₱${item.item_price.toFixed(2)}</div>
+                <div class="cart-item-quantity">
+                  <button onclick="updateQuantity('${item.id}', ${item.quantity - 1})">-</button>
+                  <span>${item.quantity}</span>
+                  <button onclick="updateQuantity('${item.id}', ${item.quantity + 1})">+</button>
+                  <button onclick="removeItem('${item.id}')">Remove</button>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        totalElement.textContent = total.toFixed(2);
+      } catch (error) {
+        console.error('Error loading cart:', error);
+        document.getElementById('cart-container').innerHTML = `
+          <div class="error">
+            Error loading cart items. Please try again.
+            <button onclick="loadCartItems()">Retry</button>
+          </div>
+        `;
+      }
+    }
+
+    async function updateQuantity(itemId, newQuantity) {
+      try {
+        if (newQuantity < 1) {
+          await removeItem(itemId);
+        } else {
+          await updateCartItemQuantity(itemId, newQuantity);
+        }
+        await loadCartItems(); // Refresh the cart display
+      } catch (error) {
+        console.error('Error updating quantity:', error);
+        alert('Error updating quantity. Please try again.');
+      }
+    }
+
+    async function removeItem(itemId) {
+      try {
+        await removeFromCart(itemId);
+        await loadCartItems(); // Refresh the cart display
+      } catch (error) {
+        console.error('Error removing item:', error);
+        alert('Error removing item. Please try again.');
+      }
+    }
+
+    async function handleCheckout() {
+      try {
+        const cartItems = await getCartItems();
+        
+        if (!cartItems || cartItems.length === 0) {
+          alert('Your cart is empty. Please add items before checking out.');
+          return;
+        }
+
+        // Calculate cart totals with proper price handling
+        const itemsWithPrices = cartItems.map(item => {
+          const originalPrice = parseFloat(item.item_price || 0) * (item.quantity || 1);
+          const discountedPrice = originalPrice * 0.8; // 20% discount
+          return {
+            ...item,
+            originalTotal: originalPrice,
+            discountedTotal: discountedPrice
+          };
+        });
+
+        const total = itemsWithPrices.reduce((sum, item) => sum + item.originalTotal, 0);
+        const discountedTotal = itemsWithPrices.reduce((sum, item) => sum + item.discountedTotal, 0);
+        
+        // Create purchase details object with proper price formatting
+        const purchaseDetails = {
+          items: itemsWithPrices,
+          totalOriginal: total.toFixed(2),
+          totalDiscounted: discountedTotal.toFixed(2),
+          discount: '20%'
+        };
+
+        // Save to localStorage for purchase page
+        localStorage.setItem('purchaseDetails', JSON.stringify(purchaseDetails));
+        
+        // Clear the cart
+        await clearCart();
+        
+        // Redirect to purchase page
+        window.location.href = 'purchase.html';
+      } catch (error) {
+        console.error('Error during checkout:', error);
+        alert('Error processing checkout. Please try again.');
+      }
+    }
+  </script>
+</body>
+</html>
+

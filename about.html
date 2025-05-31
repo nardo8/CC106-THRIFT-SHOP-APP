@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>About - Bestsellers</title>
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: Arial, sans-serif;
+      background-color: #f0f0f0;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .navbar {
+      background-color: #d3d3d3;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 30px;
+    }
+
+    .navbar-left,
+    .navbar-right {
+      display: flex;
+      align-items: center;
+    }
+
+    .navbar-left a {
+      color: rgb(19, 17, 17);
+      text-decoration: none;
+      margin-right: 25px;
+      font-size: 16px;
+      transition: color 0.3s ease;
+    }
+
+    .navbar-left a:hover {
+      color: #444;
+    }
+
+    .logo-box {
+      display: flex;
+      align-items: center;
+      margin-right: 25px;
+    }
+
+    .logo-box img {
+      width: 40px;
+      height: 40px;
+      object-fit: contain;
+      margin-right: 8px;
+    }
+
+    .logo-box span {
+      font-weight: bold;
+      color: black;
+      font-size: 18px;
+    }
+
+    .search-box input {
+      padding: 6px 10px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      width: 200px;
+    }
+
+    .container {
+      padding: 2rem;
+      background-color: #e6e6e6;
+    }
+
+    .bestsellers {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      flex-wrap: wrap;
+    }
+
+    .text-content {
+      max-width: 500px;
+    }
+
+    h1 {
+      font-size: 3.5rem;
+    }
+
+    .description {
+      color: #555;
+      margin-bottom: 9rem;
+      font-size: 1.2rem;
+    }
+
+    .product-cards {
+      display: flex;
+      gap: 3rem;
+      flex-wrap: wrap;
+    }
+
+    .product-image {
+      width: 100%;
+      height: 120px;
+      object-fit: cover;
+      border-radius: 4px;
+      margin-bottom: 1rem;
+    }
+
+    .card {
+      background: #fff;
+      padding: 1rem;
+      border-radius: 8px;
+      width: 250px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      text-align: center;
+      cursor: pointer;
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+    .card:hover {
+      transform: scale(1.03);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .price {
+      font-weight: bold;
+      background: #eee;
+      padding: 0.2rem 0.5rem;
+      border-radius: 3px;
+      display: inline-block;
+      margin-bottom: 0.5rem;
+    }
+
+    .footer {
+      background: #333;
+      color: #fff;
+      padding: 2rem;
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      margin-top: auto;
+    }
+
+    .footer div {
+      flex: 1 1 200px;
+      margin: 1rem 0;
+    }
+
+    .newsletter input {
+      padding: 0.5rem;
+      width: 70%;
+      margin-right: 0.5rem;
+      border: none;
+      border-radius: 4px;
+    }
+
+    .newsletter button {
+      padding: 0.5rem 1rem;
+      border: none;
+      background-color: #444;
+      color: #fff;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .newsletter button:hover {
+      background-color: #222;
+    }
+
+    .social-icons a {
+      display: flex;
+      align-items: center;
+      color: white;
+      text-decoration: none;
+      margin-bottom: 10px;
+    }
+
+    .social-icons img {
+      width: 24px;
+      margin-right: 10px;
+    }
+
+    .links ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .links li {
+      margin-bottom: 0.5rem;
+      cursor: pointer;
+    }
+
+    .links li:hover {
+      text-decoration: underline;
+    }
+
+    .popup {
+      position: fixed;
+      top: 20%;
+      left: 50%;
+      transform: translate(-50%, -20%);
+      background: white;
+      padding: 2rem;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      border-radius: 8px;
+      z-index: 1000;
+      width: 300px;
+    }
+
+    .popup h3 {
+      margin-top: 0;
+    }
+
+    .popup button {
+      margin-top: 1rem;
+      padding: 0.5rem 1rem;
+      border: none;
+      background-color: #444;
+      color: white;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .popup .close {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 18px;
+    }
+
+    .nav-icon {
+      color: white;
+      font-size: 20px;
+      margin-left: 20px;
+      text-decoration: none;
+      transition: color 0.3s;
+    }
+
+    .nav-icon:hover {
+      color: #ddd;
+    }
+
+    .navbar-right {
+      display: flex;
+      align-items: center;
+    }
+
+    .social-links {
+      margin-top: 2rem;
+      text-align: center;
+    }
+
+    .social-icon {
+      color: #333;
+      font-size: 24px;
+      margin: 0 15px;
+      text-decoration: none;
+      transition: color 0.3s;
+    }
+
+    .social-icon:hover {
+      color: #666;
+    }
+
+    .social-icon.facebook:hover {
+      color: #1877f2;
+    }
+
+    .social-icon.instagram:hover {
+      color: #e4405f;
+    }
+
+    /* Media Queries for Responsive Design */
+    @media screen and (max-width: 1200px) {
+      .bestsellers {
+        padding: 0 20px;
+      }
+
+      .text-content {
+        max-width: 400px;
+      }
+    }
+
+    @media screen and (max-width: 768px) {
+      .navbar {
+        padding: 10px 15px;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .navbar-left, .navbar-right {
+        width: 100%;
+        justify-content: center;
+        gap: 15px;
+      }
+
+      .bestsellers {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+      }
+
+      .text-content {
+        max-width: 100%;
+        margin-bottom: 2rem;
+      }
+
+      .product-cards {
+        justify-content: center;
+      }
+
+      .footer {
+        padding: 1rem;
+      }
+
+      .footer div {
+        flex: 1 1 100%;
+        text-align: center;
+      }
+
+      .social-icons a {
+        justify-content: center;
+      }
+    }
+
+    @media screen and (max-width: 480px) {
+      .navbar-left a {
+        font-size: 14px;
+        margin-right: 15px;
+      }
+
+      .logo-box {
+        margin-right: 15px;
+      }
+
+      .logo-box img {
+        height: 30px;
+        width: 30px;
+      }
+
+      h1 {
+        font-size: 2.5rem;
+      }
+
+      .description {
+        margin-bottom: 4rem;
+        font-size: 1rem;
+      }
+
+      .card {
+        width: 100%;
+        max-width: 300px;
+      }
+
+      .popup {
+        width: 90%;
+        margin: 50px auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="navbar">
+    <div class="navbar-left">
+      <div class="logo-box">
+        <img src="pic.png" alt="Logo">
+        <span>ThriftShop</span>
+      </div>
+      <a href="shop.html">Shop</a>
+      <a href="subscribe.html">Subscribe</a>
+      <a href="about.html">About</a>
+    </div>
+    <div class="navbar-right">
+      <a href="shopping basket.html" class="nav-icon" title="Cart">
+        <i class="fas fa-shopping-cart"></i>
+      </a>
+      <a href="order_history.html" class="nav-icon" title="Order History">
+        <i class="fas fa-history"></i>
+      </a>
+      <a href="marketplace.html" class="nav-icon" title="Marketplace">
+        <i class="fas fa-store"></i>
+      </a>
+      <a href="index.html" class="nav-icon" title="Logout">
+        <i class="fas fa-sign-out-alt"></i>
+      </a>
+    </div>
+  </div>
+
+  <section class="container">
+    <div class="bestsellers">
+      <div class="text-content">
+        <h1>Try our bestsellers</h1>
+        <p class="description">
+          Our bestseller is crafted for those who appreciate quality and style. Designed with premium materials and attention to detail, it's a must-have for any wardrobe.
+        </p>
+      </div>
+      <div class="product-cards">
+        <div class="card" onclick="location.href='chromehearts.html'">
+          <img src="ChromeH.jpg" alt="Chromehearts" class="product-image" />
+          <div class="price">$9</div>
+          <h3>Chromehearts</h3>
+          <p>Bold, Fresh and Fearless.</p>
+        </div>
+        <div class="card" onclick="location.href='carhartt.html'">
+          <img src="ch.webp" alt="Carrhart" class="product-image" />
+          <div class="price">$9</div>
+          <h3>Carrhart</h3>
+          <p>Durable, Clean and Classic.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div>
+      <div class="social-icons">
+        <a href="https://www.facebook.com" target="_blank">
+          <img src="facebook.png" alt="Facebook"> Facebook
+        </a>
+        <a href="https://www.instagram.com" target="_blank">
+          <img src="instagram.png" alt="Instagram"> Instagram
+        </a>
+      </div>
+    </div>
+    <div class="newsletter">
+      <p>Let's stay in touch! Sign up to our newsletter and get the best deals!</p>
+      <button onclick="location.href='subscribe.html'">Subscribe now</button>
+    </div>
+    <div class="links">
+      <h4>Help</h4>
+      <ul>
+        <li onclick="showPopup('FAQ: Frequently Asked Questions')">FAQ</li>
+        <li onclick="showPopup('Customer Service: Contact us for support')">Customer Service</li>
+        <li onclick="showPopup('Contact us: Reach out to us anytime')">Contact us</li>
+      </ul>
+    </div>
+    <div class="links">
+      <h4>Other</h4>
+      <ul>
+        <li onclick="showPopup('Privacy Policy: Learn how we protect your data')">Privacy Policy</li>
+        <li onclick="showPopup('Subscription: Learn more about our subscription options')">Subscription</li>
+      </ul>
+    </div>
+  </footer>
+
+  <div id="popup" class="popup" style="display:none;">
+    <div class="close" onclick="closePopup()">&times;</div>
+    <h3 id="popup-title"></h3>
+    <button onclick="closePopup()">Accept</button>
+  </div>
+
+  <div class="social-links">
+    <h3>Follow Us</h3>
+    <a href="https://facebook.com" target="_blank" class="social-icon facebook" title="Follow us on Facebook">
+      <i class="fab fa-facebook"></i>
+    </a>
+    <a href="https://instagram.com" target="_blank" class="social-icon instagram" title="Follow us on Instagram">
+      <i class="fab fa-instagram"></i>
+    </a>
+  </div>
+
+  <script>
+    function showPopup(text) {
+      document.getElementById('popup-title').innerText = text;
+      document.getElementById('popup').style.display = 'block';
+    }
+
+    function closePopup() {
+      document.getElementById('popup').style.display = 'none';
+    }
+  </script>
+</body>
+</html>
